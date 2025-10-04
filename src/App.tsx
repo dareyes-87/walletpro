@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AppLayout from './components/AppLayout';
 import type { Session } from '@supabase/supabase-js';
+import AccountsPage from './pages/AccountsPage';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -30,6 +31,10 @@ function App() {
           element={session ? <AppLayout><DashboardPage /></AppLayout> : <Navigate to="/" />} 
         />
         {/* Aquí irán las otras páginas como /accounts, etc. */}
+        <Route 
+          path="/accounts" // <-- 2. Añade la nueva ruta
+          element={session ? <AppLayout><AccountsPage /></AppLayout> : <Navigate to="/" />} 
+        />
       </Routes>
     </BrowserRouter>
   );
