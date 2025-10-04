@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { FiHome, FiList, FiPieChart, FiSettings, FiLogOut, FiMenu, FiX, FiCreditCard } from 'react-icons/fi'; // <-- 1. Añade FiCreditCard
+import { FiHome, FiList, FiPieChart, FiTag, FiCreditCard } from 'react-icons/fi'; // <-- 1. Añade FiTag
 
-
-// Items del menú para mantener el código limpio
+// Items del menú
 const navItems = [
   { icon: FiHome, text: 'Inicio', path: '/dashboard' },
-  { icon: FiCreditCard, text: 'Cuentas', path: '/accounts' }, // <-- 2. Añade el nuevo enlace
+  { icon: FiCreditCard, text: 'Cuentas', path: '/accounts' },
+  { icon: FiTag, text: 'Categorías', path: '/categories' }, // <-- 2. Añade el nuevo enlace
   { icon: FiList, text: 'Registros', path: '/transactions' },
   { icon: FiPieChart, text: 'Estadísticas', path: '/stats' },
 ];

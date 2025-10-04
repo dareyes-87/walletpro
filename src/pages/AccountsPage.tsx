@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form'; // <-- SOLUCIÓN 1: Importación de tipo explícita
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FiPlus, FiTrash2, FiEdit, FiX } from 'react-icons/fi';
@@ -9,17 +9,17 @@ import { FiPlus, FiTrash2, FiEdit, FiX } from 'react-icons/fi';
 interface Account {
   id: string;
   name: string;
-  institution?: string;
+  institution?: string | null; // <-- SOLUCIÓN 2: Permitir null para compatibilidad con Supabase
   opening_balance: number;
 }
 
-// Esquema de validación con Zod 
+// Esquema de validación con Zod
 const accountSchema = z.object({
   name: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres' }),
   institution: z.string().optional(),
   opening_balance: z.preprocess(
-    (val) => Number(String(val)),
-    z.number().min(0, { message: 'El saldo inicial no puede ser negativo' })
+    (val) => (String(val).trim() === '' ? undefined : Number(String(val))), // Maneja campos vacíos
+    z.number().refine((val) => !isNaN(val), { message: 'Debe ser un número' }).min(0, { message: 'El saldo inicial no puede ser negativo' })
   ),
 });
 
@@ -31,15 +31,23 @@ const AccountsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<AccountFormInputs>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<AccountFormInputs>({
     resolver: zodResolver(accountSchema),
+    defaultValues: { // <-- SOLUCIÓN 3: Proporcionar valores por defecto claros
+      name: '',
+      institution: '',
+      opening_balance: 0,
+    }
   });
 
   // Función para obtener las cuentas del usuario
   const fetchAccounts = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+        setLoading(false);
+        return;
+    };
 
     const { data, error } = await supabase
       .from('accounts')
@@ -49,7 +57,7 @@ const AccountsPage: React.FC = () => {
 
     if (error) {
       console.error('Error fetching accounts:', error);
-    } else {
+    } else if (data) {
       setAccounts(data);
     }
     setLoading(false);
@@ -67,7 +75,11 @@ const AccountsPage: React.FC = () => {
 
   const openModalForEdit = (account: Account) => {
     setEditingAccount(account);
-    reset(account);
+    reset({
+        name: account.name,
+        institution: account.institution || '',
+        opening_balance: account.opening_balance
+    });
     setShowModal(true);
   };
 
@@ -124,7 +136,7 @@ const AccountsPage: React.FC = () => {
         <div className="bg-gray-800 p-6 rounded-2xl shadow-lg">
           <ul className="divide-y divide-gray-700">
             {accounts.map(account => (
-              <li key={account.id} className="py-4 flex justify-between items-center">
+              <li key={account.id} className="py-4 flex flex-wrap justify-between items-center gap-4">
                 <div>
                   <p className="font-semibold text-lg">{account.name}</p>
                   <p className="text-sm text-gray-400">{account.institution || 'Sin institución'}</p>
@@ -140,9 +152,8 @@ const AccountsPage: React.FC = () => {
         </div>
       )}
 
-      {/* --- Modal para Crear/Editar Cuenta --- */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4">
           <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-md relative">
             <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <FiX size={24} />
