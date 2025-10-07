@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient'; // La plantilla ya tiene este archivo
+import { supabase } from './supabaseClient';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AppLayout from './components/AppLayout';
@@ -25,22 +25,27 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
+      <Routes> {/* <-- El contenedor principal de rutas */}
+        
+        {/* Ruta pública */}
         <Route path="/" element={!session ? <LoginPage /> : <Navigate to="/dashboard" />} />
+        
+        {/* Rutas Protegidas */}
         <Route 
           path="/dashboard" 
           element={session ? <AppLayout><DashboardPage /></AppLayout> : <Navigate to="/" />} 
         />
-        {/* Aquí irán las otras páginas como /accounts, etc. */}
         <Route 
-          path="/accounts" // <-- 2. Añade la nueva ruta
+          path="/accounts"
           element={session ? <AppLayout><AccountsPage /></AppLayout> : <Navigate to="/" />} 
         />
-      </Routes>
-      <Route 
-          path="/categories" // <-- 2. Añade la nueva ruta
+        {/* --- SOLUCIÓN: La ruta de categorías debe estar aquí dentro --- */}
+        <Route 
+          path="/categories"
           element={session ? <AppLayout><CategoriesPage /></AppLayout> : <Navigate to="/" />} 
         />
+        
+      </Routes> {/* <-- Aquí cierra el contenedor de rutas */}
     </BrowserRouter>
   );
 }

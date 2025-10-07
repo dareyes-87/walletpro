@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FiPlus, FiTrash2, FiEdit, FiX, FiTag } from 'react-icons/fi';
 
-// Define el tipo de dato para una categoría
 interface Category {
   id: string;
   name: string;
@@ -13,11 +12,11 @@ interface Category {
   color?: string | null;
 }
 
-// Esquema de validación con Zod [cite: 437]
+// SOLUCIÓN: Hacer el color opcional y permitir que sea nulo en el esquema
 const categorySchema = z.object({
   name: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres' }),
-  type: z.enum(['income', 'expense'], { required_error: 'Debe seleccionar un tipo' }),
-  color: z.string().optional(),
+  type: z.enum(['income', 'expense']),
+  color: z.string().optional().nullable(),
 });
 
 type CategoryFormInputs = z.infer<typeof categorySchema>;
@@ -30,6 +29,7 @@ const CategoriesPage: React.FC = () => {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormInputs>({
     resolver: zodResolver(categorySchema),
+    defaultValues: { name: '', type: 'expense', color: '#888888' }
   });
 
   const fetchCategories = async () => {
@@ -56,22 +56,22 @@ const CategoriesPage: React.FC = () => {
   }, []);
 
   const openModalForNew = () => {
-    reset({ name: '', type: 'expense', color: '#CCCCCC' });
+    reset({ name: '', type: 'expense', color: '#888888' });
     setEditingCategory(null);
     setShowModal(true);
   };
 
   const openModalForEdit = (category: Category) => {
     setEditingCategory(category);
-    reset(category);
+    reset(category); // reset ya puede manejar `null` gracias al esquema
     setShowModal(true);
   };
 
   const deleteCategory = async (categoryId: string) => {
-    if (window.confirm('¿Estás seguro? Eliminar una categoría puede afectar transacciones existentes.')) {
+    if (window.confirm('¿Estás seguro?')) {
       const { error } = await supabase.from('categories').delete().eq('id', categoryId);
       if (error) {
-        alert('Error al eliminar la categoría. Es posible que tenga transacciones asociadas.');
+        alert('Error al eliminar la categoría.');
       } else {
         fetchCategories();
       }
