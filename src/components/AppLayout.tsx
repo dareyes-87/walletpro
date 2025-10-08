@@ -25,7 +25,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full text-white">
       <div className="px-6 py-4">
-        <h1 className="text-2xl font-bold text-white">FinanzasPro</h1>
+        <h1 className="text-2xl font-bold text-white">WalletGT</h1>
       </div>
       <nav className="flex-grow px-4">
         {navItems.map((item) => (
